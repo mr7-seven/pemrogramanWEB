@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="dist/leaflet.css" />
+    <title>Leaflet Dasar</title>
+    <style>
+        .container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            /* vertikal */
+            align-items: center;
+            /* horizontal */
+        }
+
+        .map {
+            width: 800px;
+            height: 600px;
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>DASHBOARD MONITORING ENERGI LISTRIK</h1>
+        <div class="map" id="map-poliban"></div>
+    </div>
+
+    <script src="dist/leaflet.js"></script>
+    <script src="js/justgage.umd.js"></script>
+
+    <script>
+        let map = L.map('map-poliban').setView([-3.295576, 114.581496], 18);
+
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(map);
+
+        let marker = L.marker([-3.295702, 114.582105]).addTo(map);
+
+        marker.bindPopup(`<div style="text-align:center;">
+                            <h3>Gedung K</h3>
+
+                            <div style="display:flex; justify-content:center; gap:10px;">
+                                <div id="gaugeVoltage" style="width:150px;height:120px;"></div>
+                                <div id="gaugeCurrent" style="width:150px;height:120px;"></div>
+                                <div id="gaugePower" style="width:150px;height:120px;"></div>
+                            </div>
+                            </div>
+                            `);
+
+        let gaugeV, gaugeI, gaugeP;
+        let intervalId = null;
+
+        marker.on("popupopen", function () {
+
+            // Delay kecil biar DOM popup siap
+            setTimeout(() => {
+
+                // INIT GAUGE
+                gaugeV = new JustGage({
+                    id: "gaugeVoltage",
+                    value: 0,
+                    min: 0,
+                    max: 250,
+                    title: "Tegangan",
+                    label: 'V'
+                });
+
+                gaugeI = new JustGage({
+                    id: "gaugeCurrent",
+                    value: 0,
+                    min: 0,
+                    max: 100,
+                    title: "Arus",
+                    label: 'A'
+                });
+
+                gaugeP = new JustGage({
+                    id: "gaugePower",
+                    value: 0,
+                    min: 0,
+                    max: 5000,
+                    title: "Daya",
+                    label: 'W'
+                });
+
+                // START UPDATE
+                startUpdate();
+
+            }, 100);
+
+        });
+
+        let lastData = { voltage: 220, current: 10, power: 2200 };
+
+        function getRandomData() {
+            lastData.voltage += Math.floor(Math.random() * 10 - 5);
+            lastData.current += Math.floor(Math.random() * 4 - 2);
+
+            lastData.voltage = Math.max(0, lastData.voltage);
+            lastData.current = Math.max(0, lastData.current);
+
+            // daya = V × I
+            lastData.power = lastData.voltage * lastData.current;
+
+            return lastData;
+        }
+
+        // START UPDATE
+        function startUpdate() {
+            stopUpdate(); 
+
+            intervalId = setInterval(() => {
+                const data = getRandomData();
+
+                gaugeV.refresh(data.voltage);
+                gaugeI.refresh(data.current);
+                gaugeP.refresh(data.power);
+
+            }, 2000);
+        }
+
+        marker.on("popupclose", function () {
+            stopUpdate();
+        });
+
+        // STOP UPDATE
+        function stopUpdate() {
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+        }
+
+    </script>
+</body>
+
+</html>
