@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap demo</title>
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/dist/leaflet.css" />
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-light bg-white shadow-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <img src="..." class="rounded" alt="Logo" width="50" height="50"
+                    class="d-inline-block align-text-center">
+                <span> EVALUASI TENGAH SEMESTER PEMROGRAMAN BERBASIS WEB</span>
+            </a>
+        </div>
+    </nav>
+
+    <div class="container-fluid" style="margin-top: 70px;">
+        <div class="row">
+
+            <!-- SIDEBAR -->
+            <div class="col-md-3 col-lg-2 bg-body-tertiary border-end vh-100 p-3">
+
+                <div class="text-center">
+                    <img src="..." class="rounded mx-auto d-block mb-2" alt="foto mhs" width="100">
+                    <h5>Nama Anda</h5>
+                    <p class="mb-1">NIM: 12345678</p>
+                    <p>Kelas: ...</p>
+                </div>
+
+                <hr class="text-secondary">
+
+            </div>
+
+            <!-- CONTENT -->
+            <div class="col-md-9 col-lg-10 p-4 bg-body-tertiary">
+                <h3 class="mb-4">SISTEM MONITORING DAN KENDALI PERANGKAT BERBASIS WEB</h3>
+
+                <div id="app">
+
+                    <!-- ROW 1 -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <div class="card text-center h-100">
+                                <div class="card-body d-flex flex-column align-items-center">
+                                    <div id="gaugeSuhu" style="width: 200px; height: 160px;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="card text-center h-100">
+                                <div class="card-body d-flex flex-column align-items-center">
+                                    isi gauge Kelembapan...
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="card text-center h-100">
+                                <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                                    <h6 class="card-title mb-2">Status</h6>
+                                    <h2>
+                                        <span :class="badgeClass">{{ status }}</span>
+                                    </h2>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ROW 2 -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6 class="text-center mb-3">Kendali Perangkat</h6>
+
+                                    <div class="row text-center">
+
+                                        <!-- Switch 1 -->
+                                        <div class="col-6">
+                                            <div class="d-flex flex-column align-items-center">
+
+                                                <label class="mb-2 fw-semibold">
+                                                    R1
+                                                </label>
+
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" role="switch"
+                                                        v-model="sw1">
+                                                </div>
+
+                                            </div>
+                                        </div>
+
+                                        <!-- Switch 2 -->
+                                        <div class="col-6">
+                                            <div class="d-flex flex-column align-items-center">
+                                                isi switch 2...
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6 class="text-center mb-3">Status Perangkat</h6>
+
+                                    <div class="row text-center">
+
+                                        <!-- Kolom 1 -->
+                                        <div class="col-6">
+                                            <div class="d-flex flex-column align-items-center">
+                                                isi status 1
+                                            </div>
+                                        </div>
+
+                                        <!-- Kolom 2 -->
+                                        <div class="col-6">
+                                            <div class="d-flex flex-column align-items-center">
+
+                                                <label class="mb-2">{{ sw2 ? "ON" : "OFF" }}</label>
+
+                                                <span class="rounded-circle d-block"
+                                                    :class="sw2 ? 'bg-success' : 'bg-danger'"
+                                                    style="width:25px; height:25px;">
+                                                </span>
+
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ROW 3 -->
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <h6>Lokasi</h6>
+                                    <div class="map" id="map-poliban" style="height: 200px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="assets/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/vue.global.js"></script>
+
+    <script>
+        const { createApp, ref, computed, onMounted } = Vue;
+
+        createApp({
+            setup() {
+
+                const sw1 = ref(false);
+
+                const suhu = ref(25);
+                const kelembaban = ref(50);
+
+                let gaugeSuhu;
+
+                // status
+                const status = computed(() => {
+                    if (suhu.value > 30 || kelembaban.value > 70) return "BAHAYA";
+                    else if (suhu.value > 27 || kelembaban.value > 60) return "WASPADA";
+                    else return "AMAN";
+                });
+
+                // badge
+                const badgeClass = computed(() => {
+                    if (status.value === "AMAN") return "badge text-bg-success";
+                    if (status.value === "WASPADA") return "badge text-bg-warning";
+                    return "badge text-bg-danger";
+                });
+
+                onMounted(() => {
+
+                    gaugeSuhu = new JustGage({
+                        id: "gaugeSuhu",
+                        value: suhu.value,
+                        min: 0,
+                        max: 50,
+                        decimals: 1,
+                        title: "Suhu (°C)",
+                        levelColors: ["#198754", "#ffc107", "#dc3545"]
+                    });
+
+                    // tambahkan inisialisasi gauge kelembapan disini...
+
+                    setInterval(() => {
+
+                        suhu.value = parseFloat((Math.random() * 15 + 20).toFixed(1));
+                        kelembaban.value = Math.floor(Math.random() * 50) + 40;
+
+                        gaugeSuhu.refresh(suhu.value);
+
+                    }, 1000);
+
+                });
+
+                return {
+                    sw1,
+                    suhu,
+                    kelembaban,
+                    status,
+                    badgeClass
+                };
+            }
+        }).mount("#app");
+    </script>
+
+    <script>
+    // tambahkan konfigurasi peta dan marker disini
+    </script>
+</body>
+
+</html>
